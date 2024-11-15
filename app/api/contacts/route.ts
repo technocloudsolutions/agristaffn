@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth, db } from '@/config/firebase-admin';
+import { adminAuth as auth, adminDb as db } from '@/config/firebase-admin';
 
 export async function POST(request: Request) {
   try {
@@ -11,8 +11,14 @@ export async function POST(request: Request) {
     const decodedToken = await auth.verifyIdToken(token);
     const contactData = await request.json();
 
-    const contactId = await db.addContact(contactData);
-    return NextResponse.json({ id: contactId }, { status: 201 });
+    // Add contact to Firestore
+    const docRef = await db.collection('contacts').add({
+      ...contactData,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    return NextResponse.json({ id: docRef.id }, { status: 201 });
   } catch (error) {
     console.error('Error creating contact:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -25,15 +31,19 @@ export async function GET(request: Request) {
     const departmentId = searchParams.get('department');
     const instituteId = searchParams.get('institute');
 
-    let contacts;
+    let contactsRef = db.collection('contacts');
+    
     if (departmentId) {
-      contacts = await db.getContactsByDepartment(departmentId);
+      contactsRef = contactsRef.where('departmentId', '==', departmentId);
     } else if (instituteId) {
-      contacts = await db.getContactsByInstitute(instituteId);
-    } else {
-      // Get all contacts
-      contacts = await db.getAllContacts();
+      contactsRef = contactsRef.where('instituteId', '==', instituteId);
     }
+
+    const snapshot = await contactsRef.get();
+    const contacts = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return NextResponse.json(contacts);
   } catch (error) {
