@@ -1,16 +1,18 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
-import serviceAccount from './service-account.json';
+import { getAuth } from 'firebase-admin/auth';
 
+// Get the service account credentials
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+  : require('./service-account.json');
+
+// Initialize Firebase Admin
 if (!getApps().length) {
   initializeApp({
-    credential: cert(serviceAccount as any),
-    projectId: serviceAccount.project_id,
+    credential: cert(serviceAccount)
   });
 }
 
-const auth = getAuth();
-const db = getFirestore();
-
-export { auth, db }; 
+export const adminDb = getFirestore();
+export const adminAuth = getAuth(); 
