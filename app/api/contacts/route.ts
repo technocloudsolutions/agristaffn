@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { adminAuth as auth, adminDb as db } from '@/config/firebase-admin';
+import { CollectionReference, Query, DocumentData } from 'firebase-admin/firestore';
 
 export async function POST(request: Request) {
   try {
@@ -31,12 +32,12 @@ export async function GET(request: Request) {
     const departmentId = searchParams.get('department');
     const instituteId = searchParams.get('institute');
 
-    let contactsRef = db.collection('contacts');
+    let contactsRef: CollectionReference | Query = db.collection('contacts');
     
     if (departmentId) {
-      contactsRef = contactsRef.where('departmentId', '==', departmentId);
+      contactsRef = (contactsRef as CollectionReference).where('departmentId', '==', departmentId);
     } else if (instituteId) {
-      contactsRef = contactsRef.where('instituteId', '==', instituteId);
+      contactsRef = (contactsRef as CollectionReference).where('instituteId', '==', instituteId);
     }
 
     const snapshot = await contactsRef.get();
