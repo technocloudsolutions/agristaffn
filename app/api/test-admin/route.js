@@ -1,10 +1,10 @@
-import { adminDB } from '../../../lib/firebase-admin.js';
+import { auth } from '@/config/firebase-admin';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
     // Try to list users as a test
-    const listUsersResult = await adminDB.auth().listUsers(1);
+    const listUsersResult = await auth.listUsers(1);
     return NextResponse.json({ 
       success: true, 
       message: 'Firebase Admin SDK initialized successfully',

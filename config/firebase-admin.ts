@@ -24,9 +24,9 @@ if (!getApps().length) {
   }
 
   initializeApp({
-    credential: cert(serviceAccount)
+    credential: cert(serviceAccount as any)
   });
 }
 
-export const adminDb = getFirestore();
-export const adminAuth = getAuth(); 
+export const db = getFirestore();
+export const auth = getAuth(); 
