@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardBody, CardHeader, Input, Button, Tabs, Tab } from "@nextui-org/react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function Home() {
   const router = useRouter();
@@ -22,9 +23,13 @@ export default function Home() {
 
     try {
       await signIn(email, password);
-      router.push('/dashboard');
+      toast.success('Logged in successfully');
+      // Force a hard navigation to dashboard
+      window.location.href = '/dashboard';
     } catch (error) {
+      console.error('Login error:', error);
       setError('Failed to login. Please check your credentials.');
+      toast.error('Failed to login');
     } finally {
       setLoading(false);
     }
@@ -42,9 +47,13 @@ export default function Home() {
 
     try {
       await signUp(email, password, fullName);
-      router.push('/dashboard');
+      toast.success('Account created successfully');
+      // Force a hard navigation to dashboard
+      window.location.href = '/dashboard';
     } catch (error) {
+      console.error('Signup error:', error);
       setError('Failed to create account. Please try again.');
+      toast.error('Failed to create account');
     } finally {
       setLoading(false);
     }
