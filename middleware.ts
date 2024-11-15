@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { adminAuth } from '@/config/firebase-admin';
 
 export async function middleware(request: NextRequest) {
   const session = request.cookies.get('session')?.value;
@@ -11,24 +10,24 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Verify the session cookie
-    const decodedClaims = await adminAuth.verifySessionCookie(session, true);
+    // Verify session using an API route instead of direct Firebase Admin usage
+    const response = await fetch(`${request.nextUrl.origin}/api/auth/verify`, {
+      headers: {
+        'Authorization': `Bearer ${session}`
+      }
+    });
 
-    // Check if the session is revoked
-    const user = await adminAuth.getUser(decodedClaims.uid);
-    
-    if (user.disabled) {
+    if (!response.ok) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
     return NextResponse.next();
   } catch (error) {
-    // If there's an error, clear the session cookie and redirect to login
+    // If there's an error, redirect to login
     return NextResponse.redirect(new URL('/', request.url));
   }
 }
 
-// Add the paths that need authentication
 export const config = {
   matcher: [
     '/dashboard/:path*',
